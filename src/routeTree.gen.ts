@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SafetyRouteImport } from './routes/safety'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as LoginRouteImport } from './routes/login'
@@ -28,6 +29,11 @@ const SignupRoute = SignupRouteImport.update({
 const SafetyRoute = SafetyRouteImport.update({
   id: '/safety',
   path: '/safety',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/safety': typeof SafetyRoute
   '/signup': typeof SignupRoute
   '/chat/$id': typeof ChatIdRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/safety': typeof SafetyRoute
   '/signup': typeof SignupRoute
   '/chat/$id': typeof ChatIdRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/safety': typeof SafetyRoute
   '/signup': typeof SignupRoute
   '/chat/$id': typeof ChatIdRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/matches'
     | '/onboarding'
+    | '/profile'
     | '/safety'
     | '/signup'
     | '/chat/$id'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/matches'
     | '/onboarding'
+    | '/profile'
     | '/safety'
     | '/signup'
     | '/chat/$id'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/matches'
     | '/onboarding'
+    | '/profile'
     | '/safety'
     | '/signup'
     | '/chat/$id'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MatchesRoute: typeof MatchesRoute
   OnboardingRoute: typeof OnboardingRoute
+  ProfileRoute: typeof ProfileRoute
   SafetyRoute: typeof SafetyRoute
   SignupRoute: typeof SignupRoute
   ChatIdRoute: typeof ChatIdRoute
@@ -174,6 +187,13 @@ declare module '@tanstack/react-router' {
       path: '/safety'
       fullPath: '/safety'
       preLoaderRoute: typeof SafetyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MatchesRoute: MatchesRoute,
   OnboardingRoute: OnboardingRoute,
+  ProfileRoute: ProfileRoute,
   SafetyRoute: SafetyRoute,
   SignupRoute: SignupRoute,
   ChatIdRoute: ChatIdRoute,
