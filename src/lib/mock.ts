@@ -114,7 +114,7 @@ export const INITIAL_DATES: DatePost[] = [
   },
 ];
 
-const KEY = "plotted_state_v1";
+const KEY = "plotted_state_v2";
 type State = {
   dates: DatePost[];
   matches: MatchRequest[];
