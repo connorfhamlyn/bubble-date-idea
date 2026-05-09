@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
-import { store, useStore, CURRENT_USER_ID, getPerson } from "@/lib/mock";
+import { store, useStore, CURRENT_USER_ID } from "@/lib/mock";
 import { Shield, Settings, LogOut, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/profile")({ component: Profile });
