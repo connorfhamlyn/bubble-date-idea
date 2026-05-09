@@ -33,7 +33,7 @@ function Signup() {
           <p className="text-[11px] text-muted-foreground px-1">
             By continuing, you agree to be kind, honest, and to never share home addresses.
           </p>
-          <button type="submit" className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-bubble">
+          <button type="submit" className="pressable w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-bubble">
             Continue
           </button>
           <p className="text-center text-sm text-muted-foreground pt-1">

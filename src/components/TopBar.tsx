@@ -10,20 +10,32 @@ export function TopBar({
   back?: boolean;
   right?: React.ReactNode;
 }) {
+  const showBrand = !back && !title;
+
   return (
-    <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-border">
-      <div className="flex items-center gap-2 px-4 h-14">
-        {back ? (
-          <Link to="/" className="-ml-2 p-2 rounded-full hover:bg-accent" aria-label="Back">
+    <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-border pt-[env(safe-area-inset-top)]">
+      <div className="flex items-center gap-2 px-3 h-14">
+        {back && (
+          <Link
+            to="/"
+            className="-ml-1 h-10 w-10 grid place-items-center rounded-full hover:bg-accent active:bg-accent/80 active:scale-95 transition-transform"
+            aria-label="Back"
+          >
             <ChevronLeft className="w-5 h-5" />
           </Link>
-        ) : (
-          <span className="font-display text-xl font-semibold tracking-tight">
-            <span className="text-primary">●</span> Plotted
+        )}
+
+        {showBrand && (
+          <span className="font-display text-xl font-semibold tracking-tight pl-1">
+            <span className="text-primary">●</span> Motif
           </span>
         )}
-        {title && <h1 className="font-display text-lg font-semibold">{title}</h1>}
-        <div className="ml-auto">{right}</div>
+
+        {title && (
+          <h1 className="font-display text-lg font-semibold truncate">{title}</h1>
+        )}
+
+        {right && <div className="ml-auto flex items-center">{right}</div>}
       </div>
     </header>
   );

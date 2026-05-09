@@ -179,7 +179,7 @@ function Create() {
         </Field>
 
         <button type="submit" disabled={!venue}
-          className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-bubble disabled:opacity-50">
+          className="pressable w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-bubble disabled:opacity-50">
           {venue ? "Drop the bubble" : "Pick a venue first"}
         </button>
       </form>

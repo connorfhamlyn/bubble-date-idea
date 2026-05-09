@@ -6,6 +6,8 @@ export const Route = createFileRoute("/onboarding")({ component: Onboarding });
 
 const AVATARS = ["🌿", "🌸", "☕", "📚", "🧗‍♀️", "🎧", "🌮", "🎨", "🌊", "🍷", "🍜", "🎬"];
 const VIBES = ["Slow mornings", "Late nights", "Outdoors", "Bookish", "Foodie", "Music", "Active", "Cozy"];
+const STEPS = [0, 1, 2] as const;
+const fieldClass = "w-full bg-card border border-input rounded-xl px-4 h-12 outline-none focus:ring-2 focus:ring-ring";
 
 function Onboarding() {
   const navigate = useNavigate();
@@ -25,6 +27,13 @@ function Onboarding() {
         age: Number(age) || 28,
         bio: bio || picked.join(" · "),
         avatar,
+        gender: "",
+        hometown: "Kingston, ON",
+        interests: ["Coffee", "Brunch"],
+        openTo: ["Intentional dating"],
+        photos: [{ id: "me-p1", url: "https://i.pravatar.cc/600?img=29", soloFace: true, layout: "portrait" }],
+        clearFacePhotoId: "me-p1",
+        avatarUrl: "https://i.pravatar.cc/600?img=29",
       },
     });
     navigate({ to: "/" });
@@ -33,7 +42,7 @@ function Onboarding() {
   return (
     <div className="min-h-dvh flex flex-col px-6 py-8">
       <div className="flex gap-1.5 mb-8">
-        {[0, 1, 2].map((i) => (
+        {STEPS.map((i) => (
           <div key={i} className={`h-1 flex-1 rounded-full ${i <= step ? "bg-primary" : "bg-muted"}`} />
         ))}
       </div>
@@ -44,9 +53,9 @@ function Onboarding() {
           <p className="text-muted-foreground mt-1">Just enough to get started.</p>
           <div className="mt-6 space-y-3">
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="First name"
-              className="w-full bg-card border border-input rounded-xl px-4 h-12 outline-none focus:ring-2 focus:ring-ring" />
+              className={fieldClass} />
             <input value={age} onChange={(e) => setAge(e.target.value)} placeholder="Age" inputMode="numeric"
-              className="w-full bg-card border border-input rounded-xl px-4 h-12 outline-none focus:ring-2 focus:ring-ring" />
+              className={fieldClass} />
           </div>
           <div className="mt-auto pt-8">
             <button onClick={() => setStep(1)} disabled={!name || !age}
@@ -60,7 +69,7 @@ function Onboarding() {
       {step === 1 && (
         <div className="flex-1 flex flex-col">
           <h1 className="font-display text-3xl font-semibold">Pick a vibe avatar</h1>
-          <p className="text-muted-foreground mt-1">Plotted leans into ideas, not selfies.</p>
+          <p className="text-muted-foreground mt-1">Motif leans into ideas, not selfies.</p>
           <div className="grid grid-cols-4 gap-3 mt-6">
             {AVATARS.map((a) => (
               <button key={a} onClick={() => setAvatar(a)}
@@ -99,7 +108,7 @@ function Onboarding() {
           </div>
           <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3}
             placeholder="One sentence about you (optional)"
-            className="mt-5 w-full bg-card border border-input rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-ring resize-none" />
+            className={`mt-5 ${fieldClass} h-auto py-3 resize-none`} />
           <div className="mt-auto pt-8 flex gap-2">
             <button onClick={() => setStep(1)} className="h-12 px-5 rounded-xl border border-border font-semibold">Back</button>
             <button onClick={finish} className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-bubble">

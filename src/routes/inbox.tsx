@@ -9,19 +9,19 @@ function Inbox() {
   const matches = useStore((s) => s.matches);
   const dates = useStore((s) => s.dates);
   const messages = useStore((s) => s.messages);
-  const accepted = matches.filter((m) => m.status === "accepted");
+  const openChats = matches.filter((m) => m.status === "chat_opened");
 
   return (
     <div className="min-h-dvh pb-28">
       <TopBar title="Chats" />
       <div className="px-5 pt-4 space-y-2">
-        {accepted.length === 0 && (
+        {openChats.length === 0 && (
           <div className="bg-card border border-dashed border-border rounded-2xl p-6 text-center text-sm text-muted-foreground">
             <p className="font-semibold text-foreground">No chats yet.</p>
-            <p className="mt-1">Chat unlocks the moment a match is accepted on both sides.</p>
+            <p className="mt-1">Chat opens when someone chooses “Start chat” from plan responses.</p>
           </div>
         )}
-        {accepted.map((m) => {
+        {openChats.map((m) => {
           const d = dates.find((x) => x.id === m.dateId);
           const otherId = m.fromUserId === CURRENT_USER_ID ? m.toUserId : m.fromUserId;
           const p = getPerson(otherId);

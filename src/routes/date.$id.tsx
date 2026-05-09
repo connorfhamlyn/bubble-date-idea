@@ -3,7 +3,7 @@ import { useState } from "react";
 import { TopBar } from "@/components/TopBar";
 import { getPerson, store, useStore, CURRENT_USER_ID } from "@/lib/mock";
 import type { MatchRequest } from "@/lib/mock";
-import { Heart, X, MessageSquarePlus, Flag, MapPin, Clock, Sparkles, DollarSign } from "lucide-react";
+import { Heart, X, Flag, MapPin, Clock, Sparkles, DollarSign } from "lucide-react";
 
 export const Route = createFileRoute("/date/$id")({ component: DateDetails });
 
@@ -12,13 +12,10 @@ function DateDetails() {
   const navigate = useNavigate();
   const date = useStore((s) => s.dates.find((d) => d.id === id));
   const matches = useStore((s) => s.matches);
-  const pendingCount = matches.filter((m) => m.fromUserId === CURRENT_USER_ID && m.status === "pending").length;
+  const pendingCount = matches.filter((m) => m.fromUserId === CURRENT_USER_ID && m.status === "interested").length;
   const limit = useStore((s) => s.pendingLimit);
   const existing = matches.find((m) => m.dateId === id && m.fromUserId === CURRENT_USER_ID);
-
-  const [mode, setMode] = useState<"none" | "suggest">("none");
   const [note, setNote] = useState("");
-  const [suggestion, setSuggestion] = useState("");
 
   if (!date) {
     return (
@@ -34,25 +31,35 @@ function DateDetails() {
   const person = getPerson(date.authorId);
   const atLimit = pendingCount >= limit && !existing;
 
-  function send(status: "pending" | "suggested") {
+  function send() {
     const req: MatchRequest = {
       id: crypto.randomUUID(),
-      dateId: date!.id,
+      dateId: date.id,
       fromUserId: CURRENT_USER_ID,
-      toUserId: date!.authorId,
-      status,
-      note: status === "pending" ? note : undefined,
-      suggestion: status === "suggested" ? suggestion : undefined,
+      toUserId: date.authorId,
+      status: "interested",
+      note: note.trim() || undefined,
       createdAt: Date.now(),
     };
-    const all = store.get().matches.filter((m) => !(m.dateId === date!.id && m.fromUserId === CURRENT_USER_ID));
+    const all = store.get().matches.filter((m) => !(m.dateId === date.id && m.fromUserId === CURRENT_USER_ID));
     store.set({ matches: [...all, req] });
     navigate({ to: "/matches" });
   }
 
   return (
     <div className="min-h-dvh pb-40 bg-background">
-      <TopBar back right={<Link to="/safety" className="p-2 rounded-full hover:bg-accent" aria-label="Report"><Flag className="w-5 h-5" /></Link>} />
+      <TopBar
+        back
+        right={
+          <Link
+            to="/safety"
+            className="h-10 w-10 grid place-items-center rounded-full hover:bg-accent active:bg-accent/80 active:scale-95 transition-transform"
+            aria-label="Report"
+          >
+            <Flag className="w-5 h-5" />
+          </Link>
+        }
+      />
 
       {/* Hero */}
       <div className="px-5 pt-2">
@@ -87,7 +94,7 @@ function DateDetails() {
 
       {existing && (
         <div className="mx-5 mt-6 rounded-2xl bg-accent text-accent-foreground p-4 text-sm">
-          You already sent a {existing.status === "suggested" ? "suggested change" : "match request"}. Track it in <Link to="/matches" className="font-semibold underline">Matches</Link>.
+          Interest sent. Track updates in <Link to="/matches" className="font-semibold underline">Matches</Link>.
         </div>
       )}
 
@@ -97,50 +104,30 @@ function DateDetails() {
           <div className="max-w-md mx-auto">
             {atLimit && (
               <p className="text-xs text-center text-destructive mb-2">
-                You've hit {limit} pending requests. Wait for a reply or withdraw one.
+                You've hit {limit} active interests. Close one in Matches to send another.
               </p>
             )}
-            {mode === "none" ? (
-              <>
-                <input
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder={`Say hi to ${person.name} (optional)`}
-                  className="w-full bg-card border border-input rounded-xl px-4 h-11 text-sm outline-none focus:ring-2 focus:ring-ring mb-2"
-                />
-                <div className="grid grid-cols-3 gap-2">
-                  <button onClick={() => navigate({ to: "/" })}
-                    className="h-12 rounded-xl border border-border font-semibold flex items-center justify-center gap-1.5">
-                    <X className="w-4 h-4" /> Pass
-                  </button>
-                  <button onClick={() => setMode("suggest")}
-                    className="h-12 rounded-xl border border-border font-semibold flex items-center justify-center gap-1.5">
-                    <MessageSquarePlus className="w-4 h-4" /> Tweak
-                  </button>
-                  <button disabled={atLimit} onClick={() => send("pending")}
-                    className="h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-bubble disabled:opacity-50 flex items-center justify-center gap-1.5">
-                    <Heart className="w-4 h-4 fill-current" /> Match
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-xs font-semibold mb-1">Suggest a change</p>
-                <textarea
-                  value={suggestion} rows={2}
-                  onChange={(e) => setSuggestion(e.target.value)}
-                  placeholder="e.g. love it, can we make it Sunday?"
-                  className="w-full bg-card border border-input rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring mb-2 resize-none"
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => setMode("none")} className="h-12 rounded-xl border border-border font-semibold">Cancel</button>
-                  <button disabled={!suggestion.trim() || atLimit} onClick={() => send("suggested")}
-                    className="h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-bubble disabled:opacity-50">
-                    Send suggestion
-                  </button>
-                </div>
-              </>
-            )}
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={`Optional note to ${person.name}`}
+              className="w-full bg-card border border-input rounded-xl px-4 h-11 text-sm outline-none focus:ring-2 focus:ring-ring mb-2"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => navigate({ to: "/" })}
+                className="h-12 rounded-xl border border-border font-semibold flex items-center justify-center gap-1.5"
+              >
+                <X className="w-4 h-4" /> Not for me
+              </button>
+              <button
+                disabled={atLimit}
+                onClick={send}
+                className="h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-bubble disabled:opacity-50 flex items-center justify-center gap-1.5"
+              >
+                <Heart className="w-4 h-4 fill-current" /> I'd do this
+              </button>
+            </div>
           </div>
         </div>
       )}

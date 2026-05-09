@@ -24,7 +24,7 @@ function Profile() {
           dateId: target.id,
           fromUserId: "u4",
           toUserId: CURRENT_USER_ID,
-          status: "pending",
+          status: "interested",
           note: "Yes! I've been wanting to try this.",
           createdAt: Date.now(),
         },
@@ -44,18 +44,30 @@ function Profile() {
       <div className="px-5 pt-4 space-y-5">
         <div className="rounded-3xl bg-gradient-warm p-6 shadow-card flex items-center gap-4">
           <div className="w-20 h-20 rounded-3xl bg-card grid place-items-center text-5xl shadow-bubble">
-            {profile.avatar}
+            {profile.avatarUrl ? (
+              <img src={profile.avatarUrl} alt="" className="w-full h-full object-cover rounded-3xl" />
+            ) : (
+              profile.avatar
+            )}
           </div>
           <div>
             <p className="font-display text-2xl font-semibold leading-tight">{profile.name}, {profile.age}</p>
             <p className="text-sm text-foreground/80 mt-0.5 max-w-[12rem]">{profile.bio}</p>
+            <div className="mt-2 flex gap-2">
+              <Link to="/profile/$id" params={{ id: CURRENT_USER_ID }} className="text-xs font-semibold text-primary">
+                View profile
+              </Link>
+              <Link to="/profile/edit" className="text-xs font-semibold text-primary">
+                Edit
+              </Link>
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
           <Stat n={dates.length} label="Posted" />
           <Stat n={matches.filter((m) => m.fromUserId === CURRENT_USER_ID).length} label="Sent" />
-          <Stat n={matches.filter((m) => m.status === "accepted").length} label="Matched" />
+          <Stat n={matches.filter((m) => m.status === "chat_opened").length} label="Chats" />
         </div>
 
         <div>

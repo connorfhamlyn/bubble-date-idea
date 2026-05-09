@@ -15,7 +15,7 @@ function Safety() {
         <div className="rounded-3xl bg-gradient-warm p-5 shadow-card">
           <Shield className="w-6 h-6" />
           <h2 className="font-display text-2xl font-semibold mt-2">You're in control.</h2>
-          <p className="text-sm text-foreground/80 mt-1">Plotted only ever shows public venues — never anyone's home address.</p>
+          <p className="text-sm text-foreground/80 mt-1">Motif only ever shows public venues — never anyone's home address.</p>
         </div>
 
         <Section title="Our ground rules">
