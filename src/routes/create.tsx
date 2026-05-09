@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
 import { store, CURRENT_USER_ID } from "@/lib/mock";
 import type { DatePost } from "@/lib/mock";
+import { searchVenues, type Venue } from "@/lib/geocode";
+import { MapPin, Loader2, Check } from "lucide-react";
 
 export const Route = createFileRoute("/create")({ component: Create });
 
@@ -13,22 +15,65 @@ const BUDGETS: DatePost["budget"][] = ["$", "$$", "$$$"];
 function Create() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
-  const [venueName, setVenueName] = useState("");
-  const [neighborhood, setNeighborhood] = useState("");
+  const [venueQuery, setVenueQuery] = useState("");
+  const [venue, setVenue] = useState<Venue | null>(null);
+  const [results, setResults] = useState<Venue[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
   const [category, setCategory] = useState<DatePost["category"]>("Coffee");
   const [vibe, setVibe] = useState("");
   const [when, setWhen] = useState("");
   const [budget, setBudget] = useState<DatePost["budget"]>("$$");
   const [description, setDescription] = useState("");
 
+  // Debounced venue search (Nominatim asks for max 1 req/sec)
+  useEffect(() => {
+    if (venue && venueQuery === venue.name) return;
+    if (venueQuery.trim().length < 2) {
+      setResults([]);
+      setSearchError(null);
+      return;
+    }
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      setSearching(true);
+      setSearchError(null);
+      try {
+        const r = await searchVenues(venueQuery, ctrl.signal);
+        setResults(r);
+        if (r.length === 0) setSearchError("No public venues match in Kingston. Try a venue name.");
+      } catch (e) {
+        if ((e as Error).name !== "AbortError") setSearchError("Couldn't reach venue search. Try again.");
+      } finally {
+        setSearching(false);
+      }
+    }, 450);
+    return () => {
+      ctrl.abort();
+      clearTimeout(t);
+    };
+  }, [venueQuery, venue]);
+
+  function pick(v: Venue) {
+    setVenue(v);
+    setVenueQuery(v.name);
+    setResults([]);
+  }
+
   function publish(e: React.FormEvent) {
     e.preventDefault();
+    if (!venue) return;
     const post: DatePost = {
       id: crypto.randomUUID(),
       authorId: CURRENT_USER_ID,
-      title, venueName, neighborhood, category, vibe, when, budget, description,
-      x: 30 + Math.random() * 50,
-      y: 25 + Math.random() * 55,
+      title,
+      venueName: venue.name,
+      neighborhood: venue.neighborhood,
+      address: venue.address,
+      category, vibe, when, budget, description,
+      lat: venue.lat,
+      lng: venue.lng,
     };
     store.set({ dates: [...store.get().dates, post] });
     navigate({ to: "/" });
@@ -41,7 +86,7 @@ function Create() {
         <div className="rounded-2xl bg-coral-soft p-4 text-sm">
           <p className="font-semibold">A few rules.</p>
           <ul className="mt-1 list-disc list-inside text-foreground/80 text-xs space-y-0.5">
-            <li>Public venues only — no homes, no addresses.</li>
+            <li>Public venues only — homes and addresses are blocked at search.</li>
             <li>Be specific: a real plan beats "let's hang."</li>
           </ul>
         </div>
@@ -51,14 +96,50 @@ function Create() {
             placeholder="e.g. Slow pour-over + people watching" className={input} />
         </Field>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Venue name">
-            <input required value={venueName} onChange={(e) => setVenueName(e.target.value)} placeholder="Sey Coffee" className={input} />
-          </Field>
-          <Field label="Neighborhood">
-            <input required value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder="Bushwick" className={input} />
-          </Field>
-        </div>
+        <Field label="Venue (Kingston, ON)">
+          <div className="relative">
+            <input
+              required
+              value={venueQuery}
+              onChange={(e) => { setVenueQuery(e.target.value); setVenue(null); }}
+              placeholder="Search a café, bar, park…"
+              className={input}
+              autoComplete="off"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              {searching ? <Loader2 className="w-4 h-4 animate-spin" />
+                : venue ? <Check className="w-4 h-4 text-primary" />
+                : <MapPin className="w-4 h-4" />}
+            </span>
+          </div>
+
+          {!venue && results.length > 0 && (
+            <ul className="mt-2 bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border max-h-72 overflow-y-auto">
+              {results.map((r) => (
+                <li key={r.id}>
+                  <button type="button" onClick={() => pick(r)}
+                    className="w-full text-left px-4 py-3 hover:bg-accent">
+                    <p className="font-semibold text-sm">{r.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {r.category} · {r.address}
+                    </p>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {!venue && searchError && (
+            <p className="text-xs text-muted-foreground mt-2">{searchError}</p>
+          )}
+          {venue && (
+            <p className="text-xs text-muted-foreground mt-2">
+              📍 {venue.address} · {venue.neighborhood}
+            </p>
+          )}
+          <p className="text-[11px] text-muted-foreground mt-2">
+            Powered by OpenStreetMap. Residential addresses are filtered out.
+          </p>
+        </Field>
 
         <Field label="Category">
           <div className="flex flex-wrap gap-2">
@@ -97,8 +178,9 @@ function Create() {
             className={`${input} h-auto py-3 resize-none`} />
         </Field>
 
-        <button type="submit" className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-bubble">
-          Drop the bubble
+        <button type="submit" disabled={!venue}
+          className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-bubble disabled:opacity-50">
+          {venue ? "Drop the bubble" : "Pick a venue first"}
         </button>
       </form>
       <BottomNav />
