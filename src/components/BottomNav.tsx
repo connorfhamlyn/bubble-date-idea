@@ -19,7 +19,7 @@ export function BottomNav() {
           return (
             <li key={to} className="flex">
               <Link
-                to={to}
+                to={to as "/"}
                 className="flex flex-1 flex-col items-center justify-center gap-1 py-1.5"
                 aria-label={label}
               >
