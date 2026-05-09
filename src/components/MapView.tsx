@@ -1,6 +1,9 @@
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import L from "leaflet";
 import type { DatePost } from "@/lib/mock";
-import { getPerson } from "@/lib/mock";
+import { getPerson, KINGSTON_CENTER } from "@/lib/mock";
 
 const CATEGORY_COLOR: Record<DatePost["category"], string> = {
   Coffee: "oklch(0.78 0.12 60)",
@@ -11,6 +14,30 @@ const CATEGORY_COLOR: Record<DatePost["category"], string> = {
   Active: "oklch(0.7 0.14 200)",
 };
 
+function bubbleIcon(emoji: string, color: string, active: boolean) {
+  const size = active ? 60 : 46;
+  return L.divIcon({
+    className: "plotted-bubble",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    html: `<div style="
+      width:${size}px;height:${size}px;border-radius:9999px;
+      display:grid;place-items:center;font-size:${active ? 26 : 22}px;
+      background:${color};border:3px solid white;
+      box-shadow:0 8px 24px -8px oklch(0.22 0.04 280 / 0.45);
+      transform: translateY(0); transition: transform .15s ease;
+    ">${emoji}</div>`,
+  });
+}
+
+function FlyTo({ to }: { to: [number, number] | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (to) map.flyTo(to, Math.max(map.getZoom(), 16), { duration: 0.6 });
+  }, [to, map]);
+  return null;
+}
+
 export function MapView({
   dates,
   selectedId,
@@ -20,56 +47,43 @@ export function MapView({
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
-  return (
-    <div className="absolute inset-0 bg-map overflow-hidden">
-      {/* Stylized "streets" */}
-      <svg className="absolute inset-0 w-full h-full opacity-40" preserveAspectRatio="none" viewBox="0 0 100 100">
-        <defs>
-          <pattern id="grid" width="14" height="14" patternUnits="userSpaceOnUse">
-            <path d="M 14 0 L 0 0 0 14" fill="none" stroke="white" strokeWidth="0.3" />
-          </pattern>
-        </defs>
-        <rect width="100" height="100" fill="url(#grid)" />
-        <path d="M0 30 Q40 25 100 40" stroke="white" strokeWidth="1.4" fill="none" opacity="0.7" />
-        <path d="M20 0 Q30 50 18 100" stroke="white" strokeWidth="1.4" fill="none" opacity="0.6" />
-        <path d="M0 75 Q50 70 100 80" stroke="white" strokeWidth="1.4" fill="none" opacity="0.5" />
-        <ellipse cx="80" cy="15" rx="18" ry="10" fill="oklch(0.85 0.08 160)" opacity="0.5" />
-        <ellipse cx="10" cy="90" rx="14" ry="8" fill="oklch(0.85 0.08 200)" opacity="0.5" />
-      </svg>
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-      {dates.map((d) => {
-        const person = getPerson(d.authorId);
-        const active = d.id === selectedId;
-        return (
-          <button
-            key={d.id}
-            onClick={() => onSelect(d.id)}
-            className="absolute -translate-x-1/2 -translate-y-1/2 transition-all"
-            style={{
-              left: `${d.x}%`,
-              top: `${d.y}%`,
-              zIndex: active ? 30 : 10,
-            }}
-            aria-label={`${person.name}'s date: ${d.title}`}
-          >
-            <span
-              className="block rounded-full grid place-items-center text-2xl shadow-bubble border-2 border-white transition-all"
-              style={{
-                backgroundColor: CATEGORY_COLOR[d.category],
-                width: active ? 64 : 48,
-                height: active ? 64 : 48,
-              }}
-            >
-              {person.avatar}
-            </span>
-            {active && (
-              <span className="absolute left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap text-[11px] font-semibold bg-foreground text-background px-2 py-0.5 rounded-full">
-                {d.venueName}
-              </span>
-            )}
-          </button>
-        );
-      })}
+  if (!mounted) {
+    return <div className="absolute inset-0 bg-muted animate-pulse" aria-hidden />;
+  }
+
+  const selected = dates.find((d) => d.id === selectedId) ?? null;
+
+  return (
+    <div className="absolute inset-0">
+      <MapContainer
+        center={KINGSTON_CENTER}
+        zoom={14}
+        scrollWheelZoom
+        zoomControl={false}
+        style={{ height: "100%", width: "100%", background: "var(--muted)" }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        />
+        {dates.map((d) => {
+          const p = getPerson(d.authorId);
+          const active = d.id === selectedId;
+          return (
+            <Marker
+              key={d.id}
+              position={[d.lat, d.lng]}
+              icon={bubbleIcon(p.avatar, CATEGORY_COLOR[d.category], active)}
+              zIndexOffset={active ? 1000 : 0}
+              eventHandlers={{ click: () => onSelect(d.id) }}
+            />
+          );
+        })}
+        <FlyTo to={selected ? [selected.lat, selected.lng] : null} />
+      </MapContainer>
     </div>
   );
 }
