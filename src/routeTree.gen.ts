@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as IndexRouteImport } from './routes/index'
@@ -24,6 +25,11 @@ const SignupRoute = SignupRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatchesRoute = MatchesRouteImport.update({
+  id: '/matches',
+  path: '/matches',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/login': typeof LoginRoute
+  '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/date/$id': typeof DateIdRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/login': typeof LoginRoute
+  '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/date/$id': typeof DateIdRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/login': typeof LoginRoute
+  '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/date/$id': typeof DateIdRoute
@@ -78,16 +87,25 @@ export interface FileRouteTypes {
     | '/'
     | '/create'
     | '/login'
+    | '/matches'
     | '/onboarding'
     | '/signup'
     | '/date/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create' | '/login' | '/onboarding' | '/signup' | '/date/$id'
+  to:
+    | '/'
+    | '/create'
+    | '/login'
+    | '/matches'
+    | '/onboarding'
+    | '/signup'
+    | '/date/$id'
   id:
     | '__root__'
     | '/'
     | '/create'
     | '/login'
+    | '/matches'
     | '/onboarding'
     | '/signup'
     | '/date/$id'
@@ -97,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CreateRoute: typeof CreateRoute
   LoginRoute: typeof LoginRoute
+  MatchesRoute: typeof MatchesRoute
   OnboardingRoute: typeof OnboardingRoute
   SignupRoute: typeof SignupRoute
   DateIdRoute: typeof DateIdRoute
@@ -116,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matches': {
+      id: '/matches'
+      path: '/matches'
+      fullPath: '/matches'
+      preLoaderRoute: typeof MatchesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -153,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreateRoute: CreateRoute,
   LoginRoute: LoginRoute,
+  MatchesRoute: MatchesRoute,
   OnboardingRoute: OnboardingRoute,
   SignupRoute: SignupRoute,
   DateIdRoute: DateIdRoute,
