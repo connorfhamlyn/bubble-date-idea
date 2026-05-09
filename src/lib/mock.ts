@@ -18,13 +18,17 @@ export type DatePost = {
   neighborhood: string;
   category: "Coffee" | "Drinks" | "Food" | "Outdoors" | "Culture" | "Active";
   vibe: string;
-  when: string; // freeform: "Sat afternoon"
+  when: string;
   budget: "$" | "$$" | "$$$";
   description: string;
-  // Position on the stylized map (percentages)
-  x: number;
-  y: number;
+  // Real venue coordinates
+  lat: number;
+  lng: number;
+  address?: string;
 };
+
+// Kingston, Ontario center
+export const KINGSTON_CENTER: [number, number] = [44.2312, -76.481];
 
 export type MatchStatus = "pending" | "accepted" | "declined" | "suggested";
 export type MatchRequest = {
